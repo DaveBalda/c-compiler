@@ -15,8 +15,11 @@ typedef struct {
     char *value;
 } Token;
 
-Token generate_number(char *curr, FILE *file);
-Token generate_keyword(char *curr, FILE *file);
+Token generateNumber(char *curr, FILE *file);
+Token generateKeyword(char *curr, FILE *file);
+Token generateSeparator(char *curr);
+
+void printToken(Token token);
 void lexer(FILE *file);
 
 #endif

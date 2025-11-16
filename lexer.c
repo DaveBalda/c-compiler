@@ -4,6 +4,14 @@
 
 #include "lexer.h"
 
+/**
+ * Transforms an integer to a char array.
+ * It's a helper function needed to match the
+ * token value type.
+ * 
+ * @param number Integer to transform
+ * @return char* 
+ */
 char* toCharArray(int number) {
     int size = floor(log10(number) + 1);
     if(number == 0){
@@ -21,12 +29,22 @@ char* toCharArray(int number) {
     return numberArray;
 }
 
-Token generate_number(char *curr, FILE *file){
+/**
+ * Handles the generation of a token with INT as
+ * a TokenType. It calculates the final value of
+ * a number until it reaches the end of the digits
+ * and then memorizes the value inside the token value
+ * with a helper function toCharArray.
+ * 
+ * @param curr Current character
+ * @param file Current readable file
+ * @return Token 
+ */
+Token generateNumber(char *curr, FILE *file){
     Token token;
     token.type = INT;
     int _calc = 0;
 
-    // Counts digits
     while(*curr != EOF){
         if(!isdigit(*curr))
             break;
@@ -40,7 +58,17 @@ Token generate_number(char *curr, FILE *file){
     return token;
 }
 
-Token generate_keyword(char *curr, FILE *file){
+/**
+ * Handles the generation of a token with KEYWORD as
+ * a TokenType. It first creates a dynamically growing
+ * buffer to contain the final keyword, then it executes
+ * a strcpy to the token value.
+ * 
+ * @param curr Current character
+ * @param file Current readable file
+ * @return Token 
+ */
+Token generateKeyword(char *curr, FILE *file){
     Token token;
 
     char *buffer;
@@ -60,6 +88,9 @@ Token generate_keyword(char *curr, FILE *file){
         *curr = fgetc(file);
     }
 
+    token.value = calloc(_iter, sizeof(char));
+    strcpy(token.value, buffer);
+
     if(strcmp(buffer, "fora") == 0)
         token.type = KEYWORD;
 
@@ -68,29 +99,64 @@ Token generate_keyword(char *curr, FILE *file){
     return token;
 }
 
+/**
+ * Handles the generation of a token with SEPARATOR as
+ * a TokenType.
+ * 
+ * @param curr Current character
+ * @return Token 
+ */
+Token generateSeparator(char* curr){
+    Token token;
+    token.type = SEPARATOR;
+    token.value = curr;
+
+    return token;
+}
+
+/**
+ * Prints a token value and type.
+ * 
+ * @param token Token to print
+ */
+void printToken(Token token){
+    switch (token.type)
+    {
+    case INT:
+        printf("> TOKEN FOUND!\n  Value: %s\n  Type: INT\n", token.value);
+        break;
+    case KEYWORD:
+        printf("> TOKEN FOUND!\n  Value: %s\n  Type: KEYWORD\n", token.value);
+        break;
+    case SEPARATOR:
+        printf("> TOKEN FOUND!\n  Value: %s\n  Type: SEPARATOR\n", token.value);
+        break;    
+    default:
+        break;
+    }
+}
+
+/**
+ * Main Lexer function that iterates on the
+ * whole file and searches for tokens.
+ * 
+ * @param file File to iterate in
+ */
 void lexer(FILE *file){
     char curr = fgetc(file);
     while(curr != EOF){
-        if(curr == ';'){
-            printf("FOUND: ;\n");
-            curr = fgetc(file);
-        }
-        if(curr == '('){
-            printf("FOUND: (\n");
-            curr = fgetc(file);
-        }
-        if(curr == ')'){
-            printf("FOUND: )\n");
+        if(curr == ';' || curr == '(' || curr == ')'){
+            Token tok = generateSeparator(&curr);
+            printToken(tok);
             curr = fgetc(file);
         }
         if(isdigit(curr)){
-            Token tok = generate_number(&curr, file);
-            printf("TOKEN LITERAL: %s\n", tok.value);
+            Token tok = generateNumber(&curr, file);
+            printToken(tok);
         }
         if(isalpha(curr)){
-            Token tok = generate_keyword(&curr, file);
-            if(tok.type == KEYWORD)
-                printf("TOKEN KEYWORD: EXIT\n");
+            Token tok = generateKeyword(&curr, file);
+            printToken(tok);
         }
     }
 }
