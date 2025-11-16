@@ -15,16 +15,19 @@
 char* toCharArray(int number) {
     int size = floor(log10(number) + 1);
     if(number == 0){
-        char *numberArray = calloc(1, sizeof(char));
+        char *numberArray = calloc(2, sizeof(char));
         numberArray[0] = '0';
+        numberArray[1] = '\0';
         return numberArray;
     }
-    char *numberArray = calloc(size, sizeof(char));
+    char *numberArray = calloc(size+1, sizeof(char));
 
     int i;
     for(i = size-1; i >= 0; --i, number/=10){
         numberArray[i] = (number % 10) + '0';
     }
+
+    numberArray[size] = '\0';
 
     return numberArray;
 }
@@ -88,8 +91,9 @@ Token generateKeyword(char *curr, FILE *file){
         *curr = fgetc(file);
     }
 
-    token.value = calloc(_iter, sizeof(char));
+    token.value = calloc(_iter+1, sizeof(char));
     strcpy(token.value, buffer);
+    strcat(token.value, "\0");
 
     if(strcmp(buffer, "fora") == 0)
         token.type = KEYWORD;
@@ -109,7 +113,10 @@ Token generateKeyword(char *curr, FILE *file){
 Token generateSeparator(char* curr){
     Token token;
     token.type = SEPARATOR;
-    token.value = curr;
+
+    token.value = calloc(2, sizeof(char));
+    strcpy(token.value, curr);
+    strcat(token.value, "\0");
 
     return token;
 }
@@ -123,13 +130,13 @@ void printToken(Token token){
     switch (token.type)
     {
     case INT:
-        printf("> TOKEN FOUND!\n  Value: %s\n  Type: INT\n", token.value);
+        printf("> TOKEN FOUND!\n  Value: %s\t  Type: INT\n", token.value);
         break;
     case KEYWORD:
-        printf("> TOKEN FOUND!\n  Value: %s\n  Type: KEYWORD\n", token.value);
+        printf("> TOKEN FOUND!\n  Value: %s\t  Type: KEYWORD\n", token.value);
         break;
     case SEPARATOR:
-        printf("> TOKEN FOUND!\n  Value: %s\n  Type: SEPARATOR\n", token.value);
+        printf("> TOKEN FOUND!\n  Value: %s\t  Type: SEPARATOR\n", token.value);
         break;    
     default:
         break;
@@ -145,17 +152,18 @@ void printToken(Token token){
 void lexer(FILE *file){
     char curr = fgetc(file);
     while(curr != EOF){
+        Token tok;
         if(curr == ';' || curr == '(' || curr == ')'){
-            Token tok = generateSeparator(&curr);
+            tok = generateSeparator(&curr);
             printToken(tok);
             curr = fgetc(file);
         }
         if(isdigit(curr)){
-            Token tok = generateNumber(&curr, file);
+            tok = generateNumber(&curr, file);
             printToken(tok);
         }
         if(isalpha(curr)){
-            Token tok = generateKeyword(&curr, file);
+            tok = generateKeyword(&curr, file);
             printToken(tok);
         }
     }
