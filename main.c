@@ -1,14 +1,23 @@
-#include "lexer.h"
+#include "./lexer/lexer.h"
 
-int main() {
-    FILE *file;
-    file = fopen("test.mud", "r");
-
-    if(file == NULL){
-        printf("Error trying to open file...\n");
-        return -1;
+int main(int argc, char *argv[]) {
+    if(argc < 2){
+        fprintf(stderr, "Syntax error: You must specify a filename with the syntax: %s <filename.mud>\n", argv[0]);
+        exit(0);
     }
 
-    lexer(file);
+    FILE *file;
+    file = fopen(argv[1], "r");
+
+    if(!file){
+        printf("File error: Specified file does not exist\n");
+        exit(0);
+    }
+
+    size_t listLength = 0;
+    Token *list = lexer(file, &listLength);
+    printTokenList(list, listLength);
+
     fclose(file);
+    exit(1);
 }

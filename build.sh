@@ -1,1 +1,1 @@
-gcc main.c lexer.c -lm -o main -Wall -Wextra
+gcc main.c ./lexer/lexer.c -lm -o mlc -Wall -Wextra
